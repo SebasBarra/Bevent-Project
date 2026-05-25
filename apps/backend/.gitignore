@@ -1,0 +1,21 @@
+# Jetbrains
+.idea/
+.vs/
+
+# Testing
+coverage/
+coverage.cobertura.xml
+
+# .NET
+bin/
+obj/
+packages/
+*.binlog
+*.DotSettings.user
+
+# Env files
+.env*
+!.env.example
+
+# Log files
+logs/

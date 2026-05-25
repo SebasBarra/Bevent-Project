@@ -1,0 +1,37 @@
+services:
+  bevent-db:
+    image: postgres:17
+    container_name: bevent.db-postgres
+    hostname: bevent-db
+    ports:
+      - '5441:5432'
+    networks:
+      - bevent-network
+
+  metabase-db:
+    image: postgres:17
+    container_name: bevent.metabase-postgres
+    hostname: metabase-db
+    ports:
+      - '5440:5432'
+    networks:
+      - bevent-network
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: bevent.metabase
+    hostname: metabase
+    ports:
+      - '5000:3000'
+    networks:
+      - bevent-network
+    depends_on:
+      metabase-db:
+        condition: service_healthy
+      bevent-db:
+        condition: service_healthy
+
+networks:
+  bevent-network:
+    name: bevent-network
+    driver: bridge

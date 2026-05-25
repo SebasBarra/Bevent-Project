@@ -1,0 +1,48 @@
+services:
+  bevent-db:
+    environment:
+      POSTGRES_DB: bevent-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432'
+    volumes:
+      - ./.containers/bevent-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d bevent-db']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  metabase-db:
+    environment:
+      POSTGRES_DB: metabase-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432'
+    volumes:
+      - ./.containers/metabase-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d metabase-db']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  metabase:
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_HOST: metabase-db
+      MB_DB_PORT: 5432
+      MB_DB_DBNAME: metabase-db
+      MB_DB_USER: postgres
+      MB_DB_PASS: postgres
+    ports:
+      - '3000'
+    volumes:
+      - ./.containers/metabase-data:/dev/random:ro
+    healthcheck:
+      test: curl --fail -I http://metabase:3000/api/health || exit 1
+      interval: 15s
+      timeout: 5s
+      retries: 5

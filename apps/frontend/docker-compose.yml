@@ -1,0 +1,17 @@
+services:
+  bevent-client:
+    image: ${DOCKER_REGISTRY-}bevent.client:dev
+    container_name: bevent.client
+    hostname: bevent-client
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - '3000:8080'
+    networks:
+      - bevent-network
+
+networks:
+  bevent-network:
+    external: true
+    name: bevent-network

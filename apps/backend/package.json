@@ -1,0 +1,12 @@
+{
+  "name": "backend",
+  "scripts": {
+    "compose": "docker compose up --build -d",
+    "down": "docker compose down",
+    "restore": "dotnet restore Backend.sln",
+    "build": "dotnet build Backend.sln --configuration Release --no-restore",
+    "ef:install": "dotnet tool install -g dotnet-ef",
+    "ef:bundle": "dotnet ef migrations bundle --configuration Release --no-build -f -p ./src/Bevent.Api/Bevent.Api.csproj -s ./src/Bevent.Api/Bevent.Api.csproj -o ./src/Bevent.Api/efbundle",
+    "migrate:add": "dotnet ef migrations add -p ./src/Bevent.Api/Bevent.Api.csproj -s ./src/Bevent.Api/Bevent.Api.csproj -n Infrastructure.Database.Migrations"
+  }
+}

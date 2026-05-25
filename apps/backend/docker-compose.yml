@@ -1,0 +1,17 @@
+services:
+  bevent-api:
+    image: ${DOCKER_REGISTRY-}bevent.api:dev
+    container_name: bevent.api
+    hostname: bevent-api
+    build:
+      context: ./
+      dockerfile: src/Bevent.Api/Dockerfile
+    ports:
+      - '4000:8080'
+    networks:
+      - bevent-network
+
+networks:
+  bevent-network:
+    external: true
+    name: bevent-network

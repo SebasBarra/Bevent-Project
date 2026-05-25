@@ -1,0 +1,73 @@
+name: CI/CD_PUSH_MAIN_RELEASE
+run-name: ${{ github.actor }}
+
+on:
+  push:
+    branches:
+      - 'main'
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release:
+    name: Create Release
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        pnpm_version: [10]
+        node_version: [22]
+        dotnet_version: [10.x]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Get the last commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet_version }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ matrix.pnpm_version }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Restore
+        run: pnpm restore
+
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: apps/frontend/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('apps/frontend/**/*.ts', 'apps/frontend/**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('pnpm-lock.yaml') }}-
+            ${{ runner.os }}-nextjs-
+
+      - name: Build
+        run: pnpm build
+
+      - name: Ef Core Install
+        run: pnpm ef:install
+
+      - name: Ef Core Bundle
+        run: pnpm ef:bundle

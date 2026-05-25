@@ -1,0 +1,23 @@
+# Next.js
+.next/
+out/
+build/
+
+# VSCode
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Dependencies
+node_modules/
+
+# Env files
+.env*
+!.env.example
+
+# Typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# clerk configuration (can include secrets)
+/.clerk/

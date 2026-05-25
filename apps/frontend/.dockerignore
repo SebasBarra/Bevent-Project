@@ -1,0 +1,17 @@
+**/Dockerfile
+**/.dockerignore
+**/.editorconfig
+**/.gitignore
+**/.containers
+**/.vscode
+**/.next
+**/.git
+**/.env.example
+**/node_modules
+**/npm-debug.log
+**/README.md
+**/components.json
+**/railway.json
+**/biome.json
+**/docker-compose*
+**/next-env.d.ts

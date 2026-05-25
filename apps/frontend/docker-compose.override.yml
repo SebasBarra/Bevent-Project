@@ -1,0 +1,9 @@
+services:
+  bevent-client:
+    environment:
+      - NEXT_PUBLIC_METABASE_URL=http://metabase:3000
+      - API_URL=http://bevent-api:8080
+    env_file:
+      - ./.env
+    ports:
+      - '8080'

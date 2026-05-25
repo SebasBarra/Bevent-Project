@@ -1,0 +1,12 @@
+# Git
+.git/
+!.github/
+
+# Dependencies
+node_modules/
+
+# Containers
+.containers/
+
+# .NET
+efbundle
