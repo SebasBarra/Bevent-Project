@@ -447,6 +447,8 @@ public sealed class ReservationService(
                 EndTime = r.EndTime,
                 Status = r.Status.ToDisplayString(),
                 ClientName = $"{r.Client.FirstName} {r.Client.LastName}",
+                ClientEmail =  r.Client.Email,
+                ClientPhone = r.Client.PhoneNumber,
                 EventHallName = r.EventHall.Name,
             })
             .ToListAsync(cancellationToken);

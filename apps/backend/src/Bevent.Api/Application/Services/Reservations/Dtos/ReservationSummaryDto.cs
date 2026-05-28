@@ -8,6 +8,8 @@ public sealed class ReservationSummaryDto
     public required TimeOnly EndTime { get; init; }
     public required string Status { get; init; }
     public required string ClientName { get; init; }
+    public required string ClientEmail { get; init; }
+    public required string ClientPhone { get; init; }
     public required string EventHallName { get; init; }
 }
 
