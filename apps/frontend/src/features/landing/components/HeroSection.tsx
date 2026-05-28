@@ -2,8 +2,11 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { getCurrentSession } from '@/features/auth/actions';
 
-export function HeroSection() {
+export async function HeroSection() {
+  const user = await getCurrentSession();
+
   return (
     <section className="relative overflow-hidden border-b bg-linear-to-br from-secondary/20 via-background to-accent/10 py-20 md:py-32">
       <div className="custom-container">
@@ -27,15 +30,18 @@ export function HeroSection() {
           </p>
 
           <div className="flex animate-slide-up flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button size="lg" asChild className="w-full sm:w-auto">
-              <Link href="/auth/registrarse">
-                Comenzar Gratis
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild className="w-full sm:w-auto">
-              <Link href="/eventos">Explorar Salones</Link>
-            </Button>
+            {!user ? (
+              <Button size="lg" asChild className="w-full sm:w-auto">
+                <Link href="/auth/registrarse">
+                  Comenzar Gratis
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            ) : (
+              <Button size="lg" variant="outline" asChild className="w-full sm:w-auto">
+                <Link href="/admin/salones">Explorar Salones</Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>

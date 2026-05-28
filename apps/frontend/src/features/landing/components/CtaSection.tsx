@@ -1,8 +1,11 @@
 import { ArrowRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { getCurrentSession } from '@/features/auth/actions';
 
-export function CTASection() {
+export async function CTASection() {
+  const user = await getCurrentSession();
+
   return (
     <section className="border-b bg-linear-to-r from-primary via-accent to-secondary py-20">
       <div className="custom-container">
@@ -20,19 +23,18 @@ export function CTASection() {
           </p>
 
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button size="lg" variant="outline" asChild className="w-full bg-background text-foreground sm:w-auto">
-              <Link href="/auth/registrarse">
-                Crear Cuenta Gratis
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button
-              size="lg"
-              asChild
-              className="w-full border-background bg-transparent text-background hover:bg-background/10 sm:w-auto"
-            >
-              <Link href="/eventos">Ver Salones Disponibles</Link>
-            </Button>
+            {!user ? (
+              <Button size="lg" asChild className="w-full sm:w-auto">
+                <Link href="/auth/registrarse">
+                  Crear Cuenta Gratis
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            ) : (
+              <Button size="lg" variant="outline" asChild className="w-full sm:w-auto">
+                <Link href="/admin/salones">Ver Salones Disponibles</Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>

@@ -1,7 +1,10 @@
 import { Calendar } from 'lucide-react';
 import Link from 'next/link';
+import { getCurrentSession } from '@/features/auth/actions';
 
-export function Footer() {
+export async function Footer() {
+  const user = await getCurrentSession();
+
   return (
     <footer className="border-t bg-muted">
       <div className="custom-container py-12">
@@ -23,27 +26,32 @@ export function Footer() {
           <div>
             <h4 className="mb-4 font-semibold text-sm">Plataforma</h4>
             <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/eventos" className="text-muted-foreground transition-colors hover:text-foreground">
-                  Explorar Salones
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/auth/registrarse"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Registrarse
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/auth/iniciar-sesion"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Iniciar Sesión
-                </Link>
-              </li>
+              {user ? (
+                <li>
+                  <Link href="/admin/salones" className="text-muted-foreground transition-colors hover:text-foreground">
+                    Explorar Salones
+                  </Link>
+                </li>
+              ) : (
+                <>
+                  <li>
+                    <Link
+                      href="/auth/registrarse"
+                      className="text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      Registrarse
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/auth/iniciar-sesion"
+                      className="text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      Iniciar Sesión
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
         </div>
