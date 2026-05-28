@@ -41,11 +41,15 @@ internal sealed class ClerkAuthenticationHandler(
 
         try
         {
-            Logger.LogInformation(
-                "[Clerk Auth] Validando token: {TokenPreview}...",
-                token[..Math.Min(20, token.Length)]
-            );
+            if (Logger.IsEnabled(LogLevel.Information))
+{
+    string tokenPreview = token.Length > 20 ? token[..20] : token;
 
+    Logger.LogInformation(
+        "[Clerk Auth] Validando token: {TokenPreview}...",
+        tokenPreview
+    );
+}
             var requestOptions = new AuthenticateRequestOptions(
                 secretKey: Options.SecretKey,
                 authorizedParties: Options.AllowedOrigins
@@ -100,12 +104,15 @@ internal sealed class ClerkAuthenticationHandler(
                 new("backend_user_id", backendUserId),
             };
 
-            Logger.LogInformation(
-                "[Clerk Auth] ✓ Token validado exitosamente. ClerkUserId: {ClerkUserId}, BackendUserId: {BackendUserId}, Role: {Role}",
-                clerkUserId,
-                backendUserId,
-                role
-            );
+            if (Logger.IsEnabled(LogLevel.Information))
+{
+    Logger.LogInformation(
+        "[Clerk Auth] ✓ Token validado exitosamente. ClerkUserId: {ClerkUserId}, BackendUserId: {BackendUserId}, Role: {Role}",
+        clerkUserId,
+        backendUserId,
+        role
+    );
+}
 
             var identity = new ClaimsIdentity(claims, Scheme.Name);
             var principal = new ClaimsPrincipal(identity);
@@ -115,7 +122,7 @@ internal sealed class ClerkAuthenticationHandler(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "[Clerk Auth] Error validando token: {Message}", ex.Message);
+            Logger.LogError(ex, "[Clerk Auth] Error validando token");
             return AuthenticateResult.Fail($"Error de validación: {ex.Message}");
         }
     }

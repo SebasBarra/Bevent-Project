@@ -2,6 +2,8 @@ INSERT INTO users (id, clerk_id, first_name, last_name, email, phone_number, rol
                    created_on_utc, updated_on_utc, is_deleted)
 VALUES ('f848a305-d356-4c64-94a5-cc1e49e31fdf', 'user_36Rpw1FCAcwzrsWfONnUhSI5NIY', 'Sebastian', 'Barra',
         'barra20sebastian02p19@gmail.com', '555-0002', 'Admin', '2025-12-06 04:54:58.812 -0400', NULL, false),
+        ('cb7fec40-e4a6-41e4-b4a7-ba3bfcb976f1', 'user_3EHr2dVQ7oWKWMVrFW3dRGEtAB3', 'Gaston', 'Admin', 
+       'gastonadmin2003@gmail.com', '555-2002', 'Admin', '2026-05-27 01:40:25.183 -0400', NULL,  false);
        ('e996087a-3c4c-4742-a57d-3a2beead45da', 'user_36PFCWfiYtwSiUVhYY3LeKZgFSu', 'Manuel', 'Morales',
         'morales.patty.jose@gmail.com', '555-0001', 'Admin', '2025-12-06 05:01:15.417 -0400', NULL, false),
        ('54a9be46-8b73-49c1-a840-5dffd519310c', 'user_36SujVcs6rq9K3OzmHX19orrdKw', 'Alex', 'Perez',
