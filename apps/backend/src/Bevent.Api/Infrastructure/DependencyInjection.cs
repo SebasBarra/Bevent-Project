@@ -1,7 +1,10 @@
 using Bevent.Api.Application.Abstractions.Authentication;
 using Bevent.Api.Application.Abstractions.Data;
+using Bevent.Api.Application.Options;
+using Bevent.Api.Application.Services;
 using Bevent.Api.Infrastructure.Authentication;
 using Bevent.Api.Infrastructure.Database;
+using Bevent.Api.Infrastructure.Services;
 using Bevent.Api.Infrastructure.Time;
 using Bevent.Api.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +20,7 @@ public static class DependencyInjection
     ) =>
         services
             .AddServices()
+            .AddCloudStorageService(configuration)
             .AddDatabase(configuration)
             .AddHealthChecks(configuration)
             .AddAuthenticationInternal(configuration)
@@ -108,6 +112,22 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<IUserContext, UserContext>();
+
+        return services;
+    }
+    
+    public static IServiceCollection AddCloudStorageService(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
+    {
+        services
+            .AddOptions<CloudinaryOptions>()
+            .Bind(configuration.GetSection(CloudinaryOptions.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddScoped<IImageStorageService, ImageStorageService>();
 
         return services;
     }

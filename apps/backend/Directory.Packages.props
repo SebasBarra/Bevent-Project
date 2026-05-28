@@ -8,7 +8,8 @@
     <!-- Shared Core -->
     <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
-    <PackageVersion Include="Clerk.BackendAPI" Version="0.14.0" />
+  <PackageVersion Include="CloudinaryDotNet" Version="1.28.0" />
+  <PackageVersion Include="Clerk.BackendAPI" Version="0.14.0" />
     <PackageVersion Include="DotNetEnv" Version="3.1.1" />
     <PackageVersion Include="EFCore.NamingConventions" Version="10.0.0-rc.2" />
     <PackageVersion Include="FluentValidation" Version="12.1.0" />
