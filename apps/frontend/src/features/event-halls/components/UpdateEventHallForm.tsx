@@ -1,9 +1,9 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Plus, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Trash2, Upload, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,8 @@ interface Props {
 export function UpdateEventHallForm({ eventHall }: Props) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [images, setImages] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
 
   const form = useForm<UpdateEventHallRequest>({
     resolver: zodResolver(updateEventHallSchema),
@@ -76,10 +78,54 @@ export function UpdateEventHallForm({ eventHall }: Props) {
     name: 'availableSchedules',
   });
 
+  // Cleanup preview URLs
+  useEffect(() => {
+    return () => {
+      previews.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [previews]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setImages((prev) => [...prev, ...filesArray]);
+
+      const newPreviews = filesArray.map((file) => URL.createObjectURL(file));
+      setPreviews((prev) => [...prev, ...newPreviews]);
+    }
+  };
+
+  const removeSelectedImage = (index: number) => {
+    URL.revokeObjectURL(previews[index]);
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const onSubmit = async (data: UpdateEventHallRequest) => {
     setIsLoading(true);
 
-    const result = await updateEventHallAction(eventHall.id, data);
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('description', data.description);
+    formData.append('maxCapacity', String(data.maxCapacity));
+    formData.append('basePrice', String(data.basePrice));
+    formData.append('location', data.location);
+
+    if (data.services) {
+      formData.append('services', JSON.stringify(data.services));
+    }
+
+    if (data.availableSchedules) {
+      formData.append('availableSchedules', JSON.stringify(data.availableSchedules));
+    }
+
+    if (images.length > 0) {
+      images.forEach((file) => {
+        formData.append('images', file);
+      });
+    }
+
+    const result = await updateEventHallAction(eventHall.id, formData);
 
     if (result.success) {
       toast.success('Salón actualizado exitosamente');
@@ -186,6 +232,82 @@ export function UpdateEventHallForm({ eventHall }: Props) {
                 </FormItem>
               )}
             />
+          </div>
+        </Card>
+
+        {/* Images */}
+        <Card className="p-5">
+          <h2 className="mb-4 font-semibold">Imágenes del salón</h2>
+          <div className="space-y-6">
+            {/* Existing Images */}
+            {eventHall.eventHallImages && eventHall.eventHallImages.length > 0 && (
+              <div>
+                <p className="mb-2 text-sm font-medium text-muted-foreground">Imágenes actuales</p>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                  {eventHall.eventHallImages.map((img) => (
+                    <div key={img.id} className="relative aspect-video overflow-hidden rounded-md border">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={img.imageUrl}
+                        alt={img.description || 'Imagen del salón'}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Upload Area */}
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-medium">Subir nuevas imágenes</p>
+                <p className="text-xs text-destructive mt-0.5">
+                  * Nota: Al subir nuevas imágenes, estas reemplazarán por completo las imágenes actuales del salón.
+                </p>
+              </div>
+              <div className="relative flex flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center hover:bg-muted/50 transition-colors">
+                <Upload className="mb-2 h-8 w-8 text-muted-foreground" />
+                <p className="mb-1 text-sm font-medium">Arrastra tus imágenes aquí o haz clic para buscar</p>
+                <p className="text-xs text-muted-foreground">PNG, JPG o WEBP (máx. 5MB por imagen)</p>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  className="absolute h-full w-full cursor-pointer opacity-0"
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+                  onChange={handleImageChange}
+                  disabled={isLoading}
+                  title=""
+                />
+                <Button type="button" variant="outline" size="sm" className="mt-3 relative z-10 pointer-events-none">
+                  Seleccionar imágenes
+                </Button>
+              </div>
+
+              {previews.length > 0 && (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                  {previews.map((preview, index) => (
+                    <div key={preview} className="group relative aspect-video overflow-hidden rounded-md border">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={preview}
+                        alt={`Vista previa ${index + 1}`}
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-1 top-1 rounded-full bg-destructive/90 p-1 text-destructive-foreground shadow hover:bg-destructive transition-colors opacity-0 group-hover:opacity-100"
+                        onClick={() => removeSelectedImage(index)}
+                        disabled={isLoading}
+                      >
+                        <X className="h-4.5 w-4.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </Card>
 

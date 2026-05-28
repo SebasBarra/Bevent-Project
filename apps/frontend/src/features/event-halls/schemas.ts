@@ -44,6 +44,11 @@ export const createEventHallSchema = z.object({
 
 export type CreateEventHallRequest = z.infer<typeof createEventHallSchema>;
 
+// Extended type used when calling the service (includes File objects not serializable by Zod)
+export type CreateEventHallFormData = CreateEventHallRequest & {
+  images?: File[];
+};
+
 export const updateEventHallSchema = z.object({
   name: z.string().min(1, 'El nombre del salón es requerido'),
   description: z.string().min(1, 'La descripción es requerida'),
@@ -57,3 +62,8 @@ export const updateEventHallSchema = z.object({
 });
 
 export type UpdateEventHallRequest = z.infer<typeof updateEventHallSchema>;
+
+// Extended type used when calling the service (includes File objects not serializable by Zod)
+export type UpdateEventHallFormData = UpdateEventHallRequest & {
+  images?: File[];
+};

@@ -268,24 +268,26 @@ public sealed class EventHallService(
         // Update images if new ones are provided
         if (imageFiles is not null && imageFiles.Count > 0)
         {
-            // Delete old images from Cloudinary (except the default one)
+            // Soft-delete old images and remove from Cloudinary (except the default one)
+            // NOTE: Using soft-delete (IsDeleted = true) instead of context.Remove() + .Clear()
+            // to avoid DbUpdateConcurrencyException caused by EF Core double-tracking the same entities.
             foreach (EventHallImage oldImage in eventHall.EventHallImages)
             {
                 if (oldImage.ImagePublicId != "DefaultImage_pbb47u")
                 {
                     await imageStorageService.DeleteImageAsync(oldImage.ImagePublicId, cancellationToken);
                 }
-                context.EventHallImages.Remove(oldImage);
+                oldImage.IsDeleted = true;
+                oldImage.UpdatedOnUtc = dateTimeProvider.UtcNow;
             }
-            eventHall.EventHallImages.Clear();
 
-            // Upload new ones
+            // Upload and register new images
             foreach (FileUpload imageFile in imageFiles)
             {
                 Result<(Uri Url, string PublicId)> uploadResult = await imageStorageService.UploadImageAsync(imageFile, cancellationToken: cancellationToken);
                 if (uploadResult.IsSuccess)
                 {
-                    eventHall.EventHallImages.Add(new EventHallImage
+                    context.EventHallImages.Add(new EventHallImage
                     {
                         ImageUrl = uploadResult.Value.Url,
                         ImagePublicId = uploadResult.Value.PublicId,
@@ -354,16 +356,18 @@ public sealed class EventHallService(
             schedule.UpdatedOnUtc = dateTimeProvider.UtcNow;
         }
 
-        // Delete images from Cloudinary (except the default one) and database
+        // Soft-delete images and remove from Cloudinary (except the default one)
+        // NOTE: Using soft-delete instead of context.Remove() + .Clear() to avoid
+        // DbUpdateConcurrencyException from EF Core double-tracking the same entities.
         foreach (EventHallImage img in eventHall.EventHallImages)
         {
             if (img.ImagePublicId != "DefaultImage_pbb47u")
             {
                 await imageStorageService.DeleteImageAsync(img.ImagePublicId, cancellationToken);
             }
-            context.EventHallImages.Remove(img);
+            img.IsDeleted = true;
+            img.UpdatedOnUtc = dateTimeProvider.UtcNow;
         }
-        eventHall.EventHallImages.Clear();
 
         await context.SaveChangesAsync(cancellationToken);
 

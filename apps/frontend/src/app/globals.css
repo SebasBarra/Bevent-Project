@@ -192,7 +192,8 @@
   }
 
   @keyframes float {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateY(0px) rotate(0deg);
     }
     50% {
@@ -201,7 +202,8 @@
   }
 
   @keyframes float-reverse {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateY(0px) rotate(0deg);
     }
     50% {
@@ -210,7 +212,8 @@
   }
 
   @keyframes pulse-slow {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 0.3;
       transform: scale(1) translate(0px, 0px);
     }
@@ -252,4 +255,3 @@
 @utility animate-pulse-slow {
   animation: pulse-slow 10s ease-in-out infinite;
 }
-

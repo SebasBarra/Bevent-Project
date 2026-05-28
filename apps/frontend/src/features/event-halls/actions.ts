@@ -1,7 +1,12 @@
 'use server';
 
 import { getCurrentToken } from '@/features/auth/actions';
-import type { CreateEventHallRequest, UpdateEventHallRequest } from '@/features/event-halls/schemas';
+import {
+  type CreateEventHallFormData,
+  createEventHallSchema,
+  type UpdateEventHallFormData,
+  updateEventHallSchema,
+} from '@/features/event-halls/schemas';
 import {
   createEventHall,
   deleteEventHall,
@@ -18,9 +23,56 @@ import type {
 } from '@/features/event-halls/types';
 import { type ActionResult, safeAction } from '@/lib/safe-action';
 
+function parseFormDataToCreateDto(formData: FormData): CreateEventHallFormData {
+  const raw = {
+    name: formData.get('name') as string,
+    description: formData.get('description') as string,
+    maxCapacity: Number(formData.get('maxCapacity')),
+    basePrice: Number(formData.get('basePrice')),
+    location: formData.get('location') as string,
+    services: formData.get('services') ? JSON.parse(formData.get('services') as string) : undefined,
+    availableSchedules: formData.get('availableSchedules')
+      ? JSON.parse(formData.get('availableSchedules') as string)
+      : undefined,
+  };
+
+  const validated = createEventHallSchema.parse(raw);
+
+  const images = formData.getAll('images').filter((f): f is File => f instanceof File && f.size > 0);
+
+  return {
+    ...validated,
+    images: images.length > 0 ? images : undefined,
+  };
+}
+
+function parseFormDataToUpdateDto(formData: FormData): UpdateEventHallFormData {
+  const raw = {
+    name: formData.get('name') as string,
+    description: formData.get('description') as string,
+    maxCapacity: Number(formData.get('maxCapacity')),
+    basePrice: Number(formData.get('basePrice')),
+    location: formData.get('location') as string,
+    services: formData.get('services') ? JSON.parse(formData.get('services') as string) : undefined,
+    availableSchedules: formData.get('availableSchedules')
+      ? JSON.parse(formData.get('availableSchedules') as string)
+      : undefined,
+  };
+
+  const validated = updateEventHallSchema.parse(raw);
+
+  const images = formData.getAll('images').filter((f): f is File => f instanceof File && f.size > 0);
+
+  return {
+    ...validated,
+    images: images.length > 0 ? images : undefined,
+  };
+}
+
 // Only Admin
-export async function createEventHallAction(data: CreateEventHallRequest): Promise<ActionResult<EventHallId>> {
+export async function createEventHallAction(formData: FormData): Promise<ActionResult<EventHallId>> {
   const token = await getCurrentToken({ redirectIfNotFound: true });
+  const data = parseFormDataToCreateDto(formData);
 
   return await safeAction(() => createEventHall(token, data));
 }
@@ -28,9 +80,10 @@ export async function createEventHallAction(data: CreateEventHallRequest): Promi
 // Only Admin
 export async function updateEventHallAction(
   eventHallId: string,
-  data: UpdateEventHallRequest,
+  formData: FormData,
 ): Promise<ActionResult<EventHallId>> {
   const token = await getCurrentToken({ redirectIfNotFound: true });
+  const data = parseFormDataToUpdateDto(formData);
 
   return await safeAction(() => updateEventHall(token, eventHallId, data));
 }
