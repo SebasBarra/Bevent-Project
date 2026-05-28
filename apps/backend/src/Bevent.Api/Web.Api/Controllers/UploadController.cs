@@ -92,4 +92,34 @@ public sealed class UploadController(
             image.EventHallId
         });
     }
+
+    [HttpGet("event-hall-image/{eventHallId:guid}")]
+[AllowAnonymous]
+public async Task<IResult> GetEventHallImages(
+    [FromRoute] Guid eventHallId,
+    CancellationToken cancellationToken
+)
+{
+    var eventHallExists = await context.EventHalls
+        .AnyAsync(x => x.Id == eventHallId, cancellationToken);
+
+    if (!eventHallExists)
+    {
+        return Results.NotFound("El salón no existe.");
+    }
+
+    var images = await context.EventHallImages
+        .Where(x => x.EventHallId == eventHallId)
+        .Select(x => new
+        {
+            x.Id,
+            x.Description,
+            x.ImageUrl,
+            x.ImagePublicId,
+            x.CreatedOnUtc
+        })
+        .ToListAsync(cancellationToken);
+
+    return Results.Ok(images);
+}
 }
