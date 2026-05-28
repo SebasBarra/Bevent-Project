@@ -5,8 +5,7 @@ import type {
   EventHallId,
   EventHallListItem,
 } from '@/features/event-halls/types';
-import { ApiError } from '@/lib/api-client';
-import { apiClient } from '@/lib/api-client';
+import { ApiError, apiClient } from '@/lib/api-client';
 import { env } from '@/lib/env/server';
 
 async function fetchMultipart<T>(url: string, method: 'POST' | 'PUT', token: string, formData: FormData): Promise<T> {

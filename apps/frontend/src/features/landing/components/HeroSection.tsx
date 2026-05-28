@@ -7,6 +7,12 @@ import { getCurrentSession } from '@/features/auth/actions';
 export async function HeroSection() {
   const user = await getCurrentSession();
 
+  let redirectUrl = '/auth/registrarse';
+
+  if (user) {
+    redirectUrl = user.role === 'Administrador' ? '/admin/salones' : '/cliente/salones';
+  }
+
   return (
     <section className="relative overflow-hidden border-b bg-background py-20 md:py-32">
       {/* Modern Grid Background Pattern */}
@@ -204,7 +210,7 @@ export async function HeroSection() {
                 asChild
                 className="hover:-translate-y-0.5 w-full transition-all duration-300 hover:bg-accent/5 sm:w-auto"
               >
-                <Link href="/admin/salones">Explorar Salones</Link>
+                <Link href={redirectUrl}>Explorar Salones</Link>
               </Button>
             )}
           </div>

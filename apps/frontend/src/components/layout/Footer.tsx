@@ -5,6 +5,12 @@ import { getCurrentSession } from '@/features/auth/actions';
 export async function Footer() {
   const user = await getCurrentSession();
 
+  let redirectUrl = '/auth/registrarse';
+
+  if (user) {
+    redirectUrl = user.role === 'Administrador' ? '/admin/salones' : '/cliente/salones';
+  }
+
   return (
     <footer className="border-t bg-muted">
       <div className="custom-container py-12">
@@ -28,7 +34,7 @@ export async function Footer() {
             <ul className="space-y-2 text-sm">
               {user ? (
                 <li>
-                  <Link href="/admin/salones" className="text-muted-foreground transition-colors hover:text-foreground">
+                  <Link href={redirectUrl} className="text-muted-foreground transition-colors hover:text-foreground">
                     Explorar Salones
                   </Link>
                 </li>

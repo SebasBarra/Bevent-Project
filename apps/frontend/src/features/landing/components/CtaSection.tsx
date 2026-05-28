@@ -6,6 +6,12 @@ import { getCurrentSession } from '@/features/auth/actions';
 export async function CTASection() {
   const user = await getCurrentSession();
 
+  let redirectUrl = '/auth/registrarse';
+
+  if (user) {
+    redirectUrl = user.role === 'Administrador' ? '/admin/salones' : '/cliente/salones';
+  }
+
   return (
     <section className="border-b bg-linear-to-r from-primary via-accent to-secondary py-20">
       <div className="custom-container">
@@ -32,7 +38,7 @@ export async function CTASection() {
               </Button>
             ) : (
               <Button size="lg" variant="outline" asChild className="w-full sm:w-auto">
-                <Link href="/admin/salones">Ver Salones Disponibles</Link>
+                <Link href={redirectUrl}>Ver Salones Disponibles</Link>
               </Button>
             )}
           </div>

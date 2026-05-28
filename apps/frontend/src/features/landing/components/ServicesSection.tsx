@@ -9,6 +9,12 @@ import { cn } from '@/lib/utils';
 export async function ServicesSection() {
   const user = await getCurrentSession();
 
+  let redirectUrl = '/auth/registrarse';
+
+  if (user) {
+    redirectUrl = user.role === 'Administrador' ? '/admin/salones' : '/cliente/salones';
+  }
+
   return (
     <section className="border-b py-20">
       <div className="custom-container">
@@ -53,7 +59,7 @@ export async function ServicesSection() {
               </ul>
 
               <Button asChild className="w-full">
-                <Link href="/admin/salones">
+                <Link href={redirectUrl}>
                   {!user ? 'Registararme como Cliente' : 'Explorar Salones'}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -94,7 +100,7 @@ export async function ServicesSection() {
               </ul>
 
               <Button asChild variant="outline" className="w-full">
-                <Link href="/auth/registrarse?tipo=organizador">
+                <Link href={redirectUrl}>
                   {!user ? 'Registararme como Organizador' : 'Gestionar Mis Salones'}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>

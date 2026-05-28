@@ -81,7 +81,9 @@ export function UpdateEventHallForm({ eventHall }: Props) {
   // Cleanup preview URLs
   useEffect(() => {
     return () => {
-      previews.forEach((url) => URL.revokeObjectURL(url));
+      previews.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
     };
   }, [previews]);
 
@@ -242,7 +244,7 @@ export function UpdateEventHallForm({ eventHall }: Props) {
             {/* Existing Images */}
             {eventHall.eventHallImages && eventHall.eventHallImages.length > 0 && (
               <div>
-                <p className="mb-2 text-sm font-medium text-muted-foreground">Imágenes actuales</p>
+                <p className="mb-2 font-medium text-muted-foreground text-sm">Imágenes actuales</p>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                   {eventHall.eventHallImages.map((img) => (
                     <div key={img.id} className="relative aspect-video overflow-hidden rounded-md border">
@@ -261,15 +263,15 @@ export function UpdateEventHallForm({ eventHall }: Props) {
             {/* Upload Area */}
             <div className="space-y-4">
               <div>
-                <p className="text-sm font-medium">Subir nuevas imágenes</p>
-                <p className="text-xs text-destructive mt-0.5">
+                <p className="font-medium text-sm">Subir nuevas imágenes</p>
+                <p className="mt-0.5 text-destructive text-xs">
                   * Nota: Al subir nuevas imágenes, estas reemplazarán por completo las imágenes actuales del salón.
                 </p>
               </div>
-              <div className="relative flex flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center hover:bg-muted/50 transition-colors">
+              <div className="relative flex flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center transition-colors hover:bg-muted/50">
                 <Upload className="mb-2 h-8 w-8 text-muted-foreground" />
-                <p className="mb-1 text-sm font-medium">Arrastra tus imágenes aquí o haz clic para buscar</p>
-                <p className="text-xs text-muted-foreground">PNG, JPG o WEBP (máx. 5MB por imagen)</p>
+                <p className="mb-1 font-medium text-sm">Arrastra tus imágenes aquí o haz clic para buscar</p>
+                <p className="text-muted-foreground text-xs">PNG, JPG o WEBP (máx. 5MB por imagen)</p>
                 <input
                   type="file"
                   multiple
@@ -280,7 +282,7 @@ export function UpdateEventHallForm({ eventHall }: Props) {
                   disabled={isLoading}
                   title=""
                 />
-                <Button type="button" variant="outline" size="sm" className="mt-3 relative z-10 pointer-events-none">
+                <Button type="button" variant="outline" size="sm" className="pointer-events-none relative z-10 mt-3">
                   Seleccionar imágenes
                 </Button>
               </div>
@@ -297,7 +299,7 @@ export function UpdateEventHallForm({ eventHall }: Props) {
                       />
                       <button
                         type="button"
-                        className="absolute right-1 top-1 rounded-full bg-destructive/90 p-1 text-destructive-foreground shadow hover:bg-destructive transition-colors opacity-0 group-hover:opacity-100"
+                        className="absolute top-1 right-1 rounded-full bg-destructive/90 p-1 text-destructive-foreground opacity-0 shadow transition-colors hover:bg-destructive group-hover:opacity-100"
                         onClick={() => removeSelectedImage(index)}
                         disabled={isLoading}
                       >

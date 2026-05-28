@@ -45,7 +45,7 @@ export function ReservationCard({
   const canComplete = reservation.status === ReservationStatus.CONFIRMED && isAdmin;
 
   return (
-    <Card className="p-5">
+    <Card id={`reservation-${reservation.id}`} className="scroll-mt-24 p-5 transition-all duration-500">
       <div className="mb-0 flex items-start justify-between gap-4">
         <div>
           <h3 className="mb-1 font-semibold">{reservation.eventHallName}</h3>

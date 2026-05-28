@@ -1,3 +1,5 @@
+using Bevent.Api.Application.Services.Reservations.Dtos;
+
 namespace Bevent.Api.Application.Services.EventHalls.Dtos;
 
 public sealed class EventHallResponseDto
@@ -13,5 +15,6 @@ public sealed class EventHallResponseDto
     public List<ServiceResponseDto> Services { get; init; } = [];
     public List<AvailableScheduleResponseDto> AvailableSchedules { get; init; } = [];
     public List<EventHallImageDto> EventHallImages { get; init; } = [];
+    public List<ReservationSummaryDto> PendingReservations { get; init; } = [];
 }
 

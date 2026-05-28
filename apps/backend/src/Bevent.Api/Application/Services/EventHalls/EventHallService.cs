@@ -431,6 +431,15 @@ public sealed class EventHallService(
             .EventHalls.Include(e => e.Services.Where(s => !s.IsDeleted))
             .Include(e => e.AvailableSchedules.Where(a => !a.IsDeleted))
             .Include(e => e.EventHallImages)
+            .Include(e =>
+                e.Reservations.Where(r =>
+                    !r.IsDeleted
+                    && (
+                        r.Status == ReservationStatus.Pending
+                        || r.Status == ReservationStatus.Confirmed
+                    )
+                )
+            )
             .FirstOrDefaultAsync(e => e.Id == eventHallId && !e.IsDeleted, cancellationToken);
 
         if (eventHall is null)
@@ -473,6 +482,20 @@ public sealed class EventHallService(
                     ImageUrl = img.ImageUrl.ToString(),
                     ImagePublicId = img.ImagePublicId,
                     Description = img.Description,
+                })
+                .ToList(),
+            PendingReservations = eventHall
+                .Reservations.Select(r => new ReservationSummaryDto
+                {
+                    Id = r.Id,
+                    ReservationDate = r.ReservationDate,
+                    StartTime = r.StartTime,
+                    EndTime = r.EndTime,
+                    Status = r.Status.ToDisplayString(),
+                    ClientName = "Reservado",
+                    ClientEmail = "",
+                    ClientPhone = "",
+                    EventHallName = eventHall.Name,
                 })
                 .ToList(),
         };

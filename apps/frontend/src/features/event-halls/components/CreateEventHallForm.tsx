@@ -66,7 +66,9 @@ export function CreateEventHallForm() {
   // Cleanup preview URLs
   useEffect(() => {
     return () => {
-      previews.forEach((url) => URL.revokeObjectURL(url));
+      previews.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
     };
   }, [previews]);
 

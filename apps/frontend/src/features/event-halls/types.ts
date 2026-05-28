@@ -40,8 +40,7 @@ export type EventHallDetail = EventHallListItem & {
   updatedOnUtc: string | null; // ISO date string or null
   services: Service[];
   availableSchedules: AvailableSchedule[];
-};
-
-export type EventHallAdminDetail = EventHallDetail & {
   pendingReservations: ReservationSummary[];
 };
+
+export type EventHallAdminDetail = EventHallDetail & {};

@@ -1,11 +1,13 @@
 'use client';
 
 import { Calendar, Clock, MapPin, Users } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import type { EventHallDetail } from '@/features/event-halls/types';
+import { EventHallCalendar } from './EventHallCalendar';
 
 interface Props {
   eventHall: EventHallDetail;
@@ -16,6 +18,8 @@ const DAYS_OF_WEEK = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sá
 const DEFAULT_IMAGE = 'https://res.cloudinary.com/dhbpvtom7/image/upload/v1779945310/DefaultImage_pbb47u.jpg';
 
 export function EventHallDetailView({ eventHall, children }: Props) {
+  const pathname = usePathname();
+  const isAdmin = pathname?.includes('/admin') ?? false;
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const formattedPrice = new Intl.NumberFormat('es-BO', {
     style: 'currency',
@@ -28,38 +32,57 @@ export function EventHallDetailView({ eventHall, children }: Props) {
   return (
     <div className="space-y-6">
       {/* Gallery Section */}
-      <div className="space-y-2">
-        <div className="relative aspect-video w-full overflow-hidden rounded-xl border bg-muted shadow-sm">
+      <div className="space-y-3">
+        <div className="group/gallery relative h-[280px] w-full overflow-hidden rounded-2xl border bg-muted shadow-md sm:h-[360px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={mainImageUrl}
             alt={eventHall.name}
-            className="h-full w-full object-cover transition-all duration-300"
+            className="h-full w-full object-cover transition-all duration-500 hover:scale-[1.02]"
           />
+
+          {/* Elegant Dark/Light gradient at bottom */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
 
           {images.length > 1 && (
             <>
               <button
                 type="button"
                 onClick={() => setActiveImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
-                className="-translate-y-1/2 absolute top-1/2 left-3 rounded-full bg-black/40 p-2 text-white transition-all hover:bg-black/60"
+                className="-translate-y-1/2 absolute top-1/2 left-3 rounded-full bg-black/45 p-2 text-white opacity-0 transition-all duration-300 hover:bg-black/65 active:scale-95 group-hover/gallery:opacity-100"
                 aria-label="Imagen anterior"
               >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  role="img"
+                  aria-label="Flecha izquierda"
+                >
+                  <title>Flecha izquierda</title>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
               <button
                 type="button"
                 onClick={() => setActiveImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
-                className="-translate-y-1/2 absolute top-1/2 right-3 rounded-full bg-black/40 p-2 text-white transition-all hover:bg-black/60"
+                className="-translate-y-1/2 absolute top-1/2 right-3 rounded-full bg-black/45 p-2 text-white opacity-0 transition-all duration-300 hover:bg-black/65 active:scale-95 group-hover/gallery:opacity-100"
                 aria-label="Siguiente imagen"
               >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  role="img"
+                  aria-label="Flecha derecha"
+                >
+                  <title>Flecha derecha</title>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
-              <div className="absolute right-3 bottom-3 rounded-full bg-black/60 px-2.5 py-0.5 font-medium text-white text-xs">
+              <div className="absolute right-3 bottom-3 rounded-full bg-black/70 px-3 py-1 font-semibold text-white text-xs tracking-wider backdrop-blur-xs">
                 {activeImageIndex + 1} / {images.length}
               </div>
             </>
@@ -67,15 +90,15 @@ export function EventHallDetailView({ eventHall, children }: Props) {
         </div>
 
         {images.length > 1 && (
-          <div className="scrollbar-thin flex gap-1.5 overflow-x-auto pb-1">
+          <div className="scrollbar-none flex justify-center gap-2 overflow-x-auto py-1">
             {images.map((img, index) => (
               <button
-                key={img.id}
+                key={img.id || index}
                 type="button"
-                className={`relative aspect-video w-14 shrink-0 overflow-hidden rounded-md border transition-all ${
+                className={`relative h-12 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-all duration-300 ${
                   index === activeImageIndex
-                    ? 'border-primary opacity-100 ring-2 ring-primary ring-offset-1'
-                    : 'opacity-50 hover:opacity-75'
+                    ? 'scale-105 border-primary shadow-sm'
+                    : 'border-transparent opacity-50 hover:scale-102 hover:opacity-85'
                 }`}
                 onClick={() => setActiveImageIndex(index)}
                 aria-label={`Ver imagen ${index + 1}`}
@@ -164,6 +187,15 @@ export function EventHallDetailView({ eventHall, children }: Props) {
           </div>
         </Card>
       )}
+
+      {/* Reservation Availability Calendar */}
+      <div className="space-y-3">
+        <h2 className="flex items-center gap-2 font-semibold text-lg">
+          <Calendar className="h-5 w-5 text-primary" />
+          Calendario de Disponibilidad
+        </h2>
+        <EventHallCalendar reservations={eventHall.pendingReservations || []} isAdmin={isAdmin} />
+      </div>
 
       {/* Actions slot */}
       {children}
