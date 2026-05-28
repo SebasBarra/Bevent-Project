@@ -59,12 +59,16 @@ export async function getAllEventHallsByClientAction(clientId: string): Promise<
 
 // Public
 export async function getEventHallByIdAction(eventHallId: string): Promise<ActionResult<EventHallDetail>> {
-  return await safeAction(() => getEventHallById(eventHallId));
+  const action = await safeAction(() => getEventHallById(eventHallId));
+
+  return action;
 }
 
 // Only Admin
 export async function getEventHallAdminDetailAction(eventHallId: string): Promise<ActionResult<EventHallAdminDetail>> {
   const token = await getCurrentToken({ redirectIfNotFound: true });
 
-  return await safeAction(() => getEventHallAdminDetail(token, eventHallId));
+  const action = await safeAction(() => getEventHallAdminDetail(token, eventHallId));
+
+  return action;
 }

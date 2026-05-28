@@ -60,5 +60,7 @@ export type ReservationSummary = {
   endTime: string; // "HH:MM" format
   status: ReservationStatus;
   clientName: string;
+  clientPhone: string;
+  clientEmail: string;
   eventHallName: string;
 };

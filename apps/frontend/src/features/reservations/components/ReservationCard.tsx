@@ -46,15 +46,17 @@ export function ReservationCard({
 
   return (
     <Card className="p-5">
-      <div className="mb-4 flex items-start justify-between gap-4">
+      <div className="mb-0 flex items-start justify-between gap-4">
         <div>
           <h3 className="mb-1 font-semibold">{reservation.eventHallName}</h3>
           <p className="text-muted-foreground text-sm">{isAdmin ? reservation.clientName : ''}</p>
+          <p className="text-muted-foreground text-sm">{isAdmin ? reservation.clientEmail : ''}</p>
+          <p className="text-muted-foreground text-sm">{isAdmin ? reservation.clientPhone : ''}</p>
         </div>
         <Badge variant={STATUS_VARIANTS[reservation.status]}>{reservation.status}</Badge>
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-4 text-muted-foreground text-sm">
+      <div className="flex flex-wrap gap-2 text-muted-foreground text-sm">
         <div className="flex items-center gap-1.5">
           <Calendar className="h-4 w-4" />
           <span className="capitalize">{formattedDate}</span>
