@@ -6,6 +6,8 @@ using Bevent.Api.Infrastructure.Time;
 using Bevent.Api.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Bevent.Api.Application.Interfaces;
+using Bevent.Api.Infrastructure.Services;
 
 namespace Bevent.Api.Infrastructure;
 
@@ -25,6 +27,9 @@ public static class DependencyInjection
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+        services.AddScoped<IImageUploadService, CloudinaryImageUploadService>();
+        services.AddScoped<IEventImageUploadService, EventCloudinaryImageUploadService>();
+
 
         return services;
     }
@@ -111,4 +116,5 @@ public static class DependencyInjection
 
         return services;
     }
+
 }

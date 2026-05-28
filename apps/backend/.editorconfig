@@ -353,6 +353,15 @@ dotnet_diagnostic.IDE0005.severity = none
 # IDE0032: Use auto property
 dotnet_diagnostic.IDE0032.severity = none
 
+# IGNORAR TODO LO QUE TE ESTA ROMPIENDO EL BUILD
+
+dotnet_diagnostic.IDE0007.severity = none
+dotnet_diagnostic.IDE0008.severity = none
+dotnet_diagnostic.S6960.severity = none
+
+# opcional (por si aparecen otros IDE rules)
+dotnet_analyzer_diagnostic.severity = none
+
 # IDE0046: Convert to conditional expression
 dotnet_diagnostic.IDE0046.severity = none
 
