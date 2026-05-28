@@ -8,5 +8,6 @@ public sealed class EventHallListItemDto
     public required int MaxCapacity { get; init; }
     public required decimal BasePrice { get; init; }
     public required string Location { get; init; }
+    public List<EventHallImageDto> EventHallImages { get; init; } = [];
 }
 

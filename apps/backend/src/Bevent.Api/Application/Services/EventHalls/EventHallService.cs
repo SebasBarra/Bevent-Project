@@ -1,7 +1,9 @@
 using Bevent.Api.Application.Abstractions.Data;
+using Bevent.Api.Application.Abstractions.DataTransfer;
 using Bevent.Api.Application.Services.EventHalls.Dtos;
 using Bevent.Api.Application.Services.Reservations.Dtos;
 using Bevent.Api.Domain.AvailableSchedules;
+using Bevent.Api.Domain.EventHallImages;
 using Bevent.Api.Domain.EventHalls;
 using Bevent.Api.Domain.Reservations;
 using Bevent.Api.Domain.Services;
@@ -12,12 +14,14 @@ namespace Bevent.Api.Application.Services.EventHalls;
 
 public sealed class EventHallService(
     IApplicationDbContext context,
-    IDateTimeProvider dateTimeProvider
+    IDateTimeProvider dateTimeProvider,
+    IImageStorageService imageStorageService
 )
 {
     public async Task<Result<EventHallIdDto>> CreateEventHallAsync(
         Guid adminId,
         CreateEventHallDto dto,
+        List<FileUpload>? imageFiles = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -74,6 +78,38 @@ public sealed class EventHallService(
             eventHall.AvailableSchedules.Add(schedule);
         }
 
+        // Upload images to Cloudinary
+        if (imageFiles is not null && imageFiles.Count > 0)
+        {
+            foreach (FileUpload imageFile in imageFiles)
+            {
+                Result<(Uri Url, string PublicId)> uploadResult = await imageStorageService.UploadImageAsync(imageFile, cancellationToken: cancellationToken);
+                if (uploadResult.IsSuccess)
+                {
+                    eventHall.EventHallImages.Add(new EventHallImage
+                    {
+                        ImageUrl = uploadResult.Value.Url,
+                        ImagePublicId = uploadResult.Value.PublicId,
+                        Description = $"{eventHall.Name} Image",
+                        EventHallId = eventHall.Id,
+                        CreatedOnUtc = dateTimeProvider.UtcNow
+                    });
+                }
+            }
+        }
+        else
+        {
+            // Default image
+            eventHall.EventHallImages.Add(new EventHallImage
+            {
+                ImageUrl = new Uri("https://res.cloudinary.com/dhbpvtom7/image/upload/v1779945310/DefaultImage_pbb47u.jpg"),
+                ImagePublicId = "DefaultImage_pbb47u",
+                Description = $"{eventHall.Name} Default Image",
+                EventHallId = eventHall.Id,
+                CreatedOnUtc = dateTimeProvider.UtcNow
+            });
+        }
+
         context.EventHalls.Add(eventHall);
         await context.SaveChangesAsync(cancellationToken);
 
@@ -84,12 +120,14 @@ public sealed class EventHallService(
         Guid adminId,
         Guid eventHallId,
         UpdateEventHallDto dto,
+        List<FileUpload>? imageFiles = null,
         CancellationToken cancellationToken = default
     )
     {
         EventHall? eventHall = await context
             .EventHalls.Include(e => e.Services)
             .Include(e => e.AvailableSchedules)
+            .Include(e => e.EventHallImages)
             .FirstOrDefaultAsync(e => e.Id == eventHallId && !e.IsDeleted, cancellationToken);
 
         if (eventHall is null)
@@ -227,6 +265,38 @@ public sealed class EventHallService(
             }
         }
 
+        // Update images if new ones are provided
+        if (imageFiles is not null && imageFiles.Count > 0)
+        {
+            // Delete old images from Cloudinary (except the default one)
+            foreach (EventHallImage oldImage in eventHall.EventHallImages)
+            {
+                if (oldImage.ImagePublicId != "DefaultImage_pbb47u")
+                {
+                    await imageStorageService.DeleteImageAsync(oldImage.ImagePublicId, cancellationToken);
+                }
+                context.EventHallImages.Remove(oldImage);
+            }
+            eventHall.EventHallImages.Clear();
+
+            // Upload new ones
+            foreach (FileUpload imageFile in imageFiles)
+            {
+                Result<(Uri Url, string PublicId)> uploadResult = await imageStorageService.UploadImageAsync(imageFile, cancellationToken: cancellationToken);
+                if (uploadResult.IsSuccess)
+                {
+                    eventHall.EventHallImages.Add(new EventHallImage
+                    {
+                        ImageUrl = uploadResult.Value.Url,
+                        ImagePublicId = uploadResult.Value.PublicId,
+                        Description = $"{eventHall.Name} Image",
+                        EventHallId = eventHall.Id,
+                        CreatedOnUtc = dateTimeProvider.UtcNow
+                    });
+                }
+            }
+        }
+
         await context.SaveChangesAsync(cancellationToken);
 
         return new EventHallIdDto { EventHallId = eventHall.Id };
@@ -242,6 +312,7 @@ public sealed class EventHallService(
             .EventHalls.Include(e => e.Reservations)
             .Include(e => e.Services)
             .Include(e => e.AvailableSchedules)
+            .Include(e => e.EventHallImages)
             .FirstOrDefaultAsync(e => e.Id == eventHallId && !e.IsDeleted, cancellationToken);
 
         if (eventHall is null)
@@ -283,6 +354,17 @@ public sealed class EventHallService(
             schedule.UpdatedOnUtc = dateTimeProvider.UtcNow;
         }
 
+        // Delete images from Cloudinary (except the default one) and database
+        foreach (EventHallImage img in eventHall.EventHallImages)
+        {
+            if (img.ImagePublicId != "DefaultImage_pbb47u")
+            {
+                await imageStorageService.DeleteImageAsync(img.ImagePublicId, cancellationToken);
+            }
+            context.EventHallImages.Remove(img);
+        }
+        eventHall.EventHallImages.Clear();
+
         await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
@@ -314,6 +396,7 @@ public sealed class EventHallService(
         }
 
         List<EventHallListItemDto> response = await eventHalls
+            .Include(e => e.EventHallImages)
             .Select(e => new EventHallListItemDto
             {
                 Id = e.Id,
@@ -322,6 +405,13 @@ public sealed class EventHallService(
                 MaxCapacity = e.MaxCapacity,
                 BasePrice = e.BasePrice,
                 Location = e.Location,
+                EventHallImages = e.EventHallImages.Select(img => new EventHallImageDto
+                {
+                    Id = img.Id,
+                    ImageUrl = img.ImageUrl.ToString(),
+                    ImagePublicId = img.ImagePublicId,
+                    Description = img.Description
+                }).ToList()
             })
             .ToListAsync(cancellationToken);
 
@@ -336,6 +426,7 @@ public sealed class EventHallService(
         EventHall? eventHall = await context
             .EventHalls.Include(e => e.Services.Where(s => !s.IsDeleted))
             .Include(e => e.AvailableSchedules.Where(a => !a.IsDeleted))
+            .Include(e => e.EventHallImages)
             .FirstOrDefaultAsync(e => e.Id == eventHallId && !e.IsDeleted, cancellationToken);
 
         if (eventHall is null)
@@ -371,6 +462,15 @@ public sealed class EventHallService(
                     EndTime = a.EndTime,
                 })
                 .ToList(),
+            EventHallImages = eventHall
+                .EventHallImages.Select(img => new EventHallImageDto
+                {
+                    Id = img.Id,
+                    ImageUrl = img.ImageUrl.ToString(),
+                    ImagePublicId = img.ImagePublicId,
+                    Description = img.Description,
+                })
+                .ToList(),
         };
     }
 
@@ -383,6 +483,7 @@ public sealed class EventHallService(
         EventHall? eventHall = await context
             .EventHalls.Include(e => e.Services.Where(s => !s.IsDeleted))
             .Include(e => e.AvailableSchedules.Where(a => !a.IsDeleted))
+            .Include(e => e.EventHallImages)
             .Include(e =>
                 e.Reservations.Where(r =>
                     !r.IsDeleted
@@ -434,6 +535,15 @@ public sealed class EventHallService(
                     EndTime = a.EndTime,
                 })
                 .ToList(),
+            EventHallImages = eventHall
+                .EventHallImages.Select(img => new EventHallImageDto
+                {
+                    Id = img.Id,
+                    ImageUrl = img.ImageUrl.ToString(),
+                    ImagePublicId = img.ImagePublicId,
+                    Description = img.Description,
+                })
+                .ToList(),
             PendingReservations = eventHall
                 .Reservations.Select(r => new ReservationSummaryDto
                 {
@@ -451,3 +561,4 @@ public sealed class EventHallService(
         };
     }
 }
+

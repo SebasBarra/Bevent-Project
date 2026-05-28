@@ -12,5 +12,6 @@ public sealed class EventHallResponseDto
     public DateTime? UpdatedOnUtc { get; init; }
     public List<ServiceResponseDto> Services { get; init; } = [];
     public List<AvailableScheduleResponseDto> AvailableSchedules { get; init; } = [];
+    public List<EventHallImageDto> EventHallImages { get; init; } = [];
 }
 

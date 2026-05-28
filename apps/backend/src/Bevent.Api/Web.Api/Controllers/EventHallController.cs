@@ -1,13 +1,40 @@
+using System.Text.Json;
 using Bevent.Api.Application.Abstractions.Authentication;
+using Bevent.Api.Application.Abstractions.DataTransfer;
 using Bevent.Api.Application.Services.EventHalls;
 using Bevent.Api.Application.Services.EventHalls.Dtos;
 using Bevent.Api.SharedKernel;
 using Bevent.Api.Web.Api.Extensions;
 using Bevent.Api.Web.Api.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Bevent.Api.Web.Api.Controllers;
+
+public sealed class CreateEventHallRequest
+{
+    public required string Name { get; init; }
+    public required string Description { get; init; }
+    public required int MaxCapacity { get; init; }
+    public required decimal BasePrice { get; init; }
+    public required string Location { get; init; }
+    public string? Services { get; init; }
+    public string? AvailableSchedules { get; init; }
+    public List<IFormFile>? Images { get; init; }
+}
+
+public sealed class UpdateEventHallRequest
+{
+    public required string Name { get; init; }
+    public required string Description { get; init; }
+    public required int MaxCapacity { get; init; }
+    public required decimal BasePrice { get; init; }
+    public required string Location { get; init; }
+    public string? Services { get; init; }
+    public string? AvailableSchedules { get; init; }
+    public List<IFormFile>? Images { get; init; }
+}
 
 [ApiController]
 [Route("api/event-halls")]
@@ -19,18 +46,57 @@ public sealed class EventHallController(EventHallService eventHallService, IUser
     /// </summary>
     [HttpPost]
     [Authorize(Roles = Role.Admin)]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(EventHallIdDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IResult> CreateEventHall(
-        [FromBody] CreateEventHallDto dto,
+        [FromForm] CreateEventHallRequest request,
         CancellationToken cancellationToken = default
     )
     {
+        JsonSerializerOptions jsonOptions = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        List<ServiceDto> services = string.IsNullOrWhiteSpace(request.Services)
+            ? []
+            : JsonSerializer.Deserialize<List<ServiceDto>>(request.Services, jsonOptions) ?? [];
+
+        List<AvailableScheduleDto> schedules = string.IsNullOrWhiteSpace(request.AvailableSchedules)
+            ? []
+            : JsonSerializer.Deserialize<List<AvailableScheduleDto>>(request.AvailableSchedules, jsonOptions) ?? [];
+
+        CreateEventHallDto dto = new()
+        {
+            Name = request.Name,
+            Description = request.Description,
+            MaxCapacity = request.MaxCapacity,
+            BasePrice = request.BasePrice,
+            Location = request.Location,
+            Services = services,
+            AvailableSchedules = schedules
+        };
+
+        List<FileUpload> imageFiles = [];
+        if (request.Images is not null)
+        {
+            foreach (IFormFile file in request.Images)
+            {
+                imageFiles.Add(new FileUpload(
+                    file.OpenReadStream(),
+                    file.FileName,
+                    file.Length
+                ));
+            }
+        }
+
         Result<EventHallIdDto> result = await eventHallService.CreateEventHallAsync(
             userContext.UserId,
             dto,
+            imageFiles,
             cancellationToken
         );
         return result.Match(Results.Ok, ProblemResultFactory.Problem);
@@ -41,6 +107,7 @@ public sealed class EventHallController(EventHallService eventHallService, IUser
     /// </summary>
     [HttpPut("{eventHallId:guid}")]
     [Authorize(Roles = Role.Admin)]
+    [Consumes("multipart/form-data")]
     [ProducesResponseType(typeof(EventHallIdDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -48,14 +115,52 @@ public sealed class EventHallController(EventHallService eventHallService, IUser
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IResult> UpdateEventHall(
         [FromRoute] Guid eventHallId,
-        [FromBody] UpdateEventHallDto dto,
+        [FromForm] UpdateEventHallRequest request,
         CancellationToken cancellationToken = default
     )
     {
+        JsonSerializerOptions jsonOptions = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        List<UpdateServiceDto> services = string.IsNullOrWhiteSpace(request.Services)
+            ? []
+            : JsonSerializer.Deserialize<List<UpdateServiceDto>>(request.Services, jsonOptions) ?? [];
+
+        List<UpdateAvailableScheduleDto> schedules = string.IsNullOrWhiteSpace(request.AvailableSchedules)
+            ? []
+            : JsonSerializer.Deserialize<List<UpdateAvailableScheduleDto>>(request.AvailableSchedules, jsonOptions) ?? [];
+
+        UpdateEventHallDto dto = new()
+        {
+            Name = request.Name,
+            Description = request.Description,
+            MaxCapacity = request.MaxCapacity,
+            BasePrice = request.BasePrice,
+            Location = request.Location,
+            Services = services,
+            AvailableSchedules = schedules
+        };
+
+        List<FileUpload> imageFiles = [];
+        if (request.Images is not null)
+        {
+            foreach (IFormFile file in request.Images)
+            {
+                imageFiles.Add(new FileUpload(
+                    file.OpenReadStream(),
+                    file.FileName,
+                    file.Length
+                ));
+            }
+        }
+
         Result<EventHallIdDto> result = await eventHallService.UpdateEventHallAsync(
             userContext.UserId,
             eventHallId,
             dto,
+            imageFiles,
             cancellationToken
         );
         return result.Match(Results.Ok, ProblemResultFactory.Problem);

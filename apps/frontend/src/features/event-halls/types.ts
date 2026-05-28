@@ -4,6 +4,13 @@ export type EventHallId = {
   eventHallId: string;
 };
 
+export type EventHallImage = {
+  id: string;
+  imageUrl: string;
+  imagePublicId: string;
+  description: string;
+};
+
 export type EventHallListItem = {
   id: string;
   name: string;
@@ -11,6 +18,7 @@ export type EventHallListItem = {
   maxCapacity: number;
   basePrice: number;
   location: string;
+  eventHallImages: EventHallImage[];
 };
 
 export type Service = {
